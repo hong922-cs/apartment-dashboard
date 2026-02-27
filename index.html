@@ -59,15 +59,23 @@
         .table-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
         .table-scroll::-webkit-scrollbar-track { background: #f1f5f9; }
         .table-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+        /* Modal Overlay Animation */
+        #modal-overlay {
+            transition: opacity 0.3s ease;
+        }
+        #modal-content {
+            transition: transform 0.3s ease;
+        }
     </style>
 </head>
-<body class="p-4 md:p-6 lg:p-8">
+<body class="p-3 md:p-6 lg:p-8">
 
     <div class="max-w-[1400px] mx-auto">
         <!-- Header -->
         <header class="mb-6 text-center md:text-left">
-            <h1 class="text-4xl font-black rainbow-text pb-2">우리 동네 아파트 실거래가 대시보드</h1>
-            <p class="text-slate-500 mt-1 font-medium">🌈 화려한 색감으로 보는 실시간 거래 현황 분석</p>
+            <h1 class="text-3xl md:text-4xl font-black rainbow-text pb-2">우리 동네 아파트 실거래가 대시보드</h1>
+            <p class="text-slate-500 mt-1 text-sm md:text-base font-medium">🌈 화려한 색감으로 보는 실시간 거래 현황 분석</p>
         </header>
 
         <!-- Loading State -->
@@ -80,32 +88,35 @@
         <div id="dashboard" class="hidden space-y-6">
             
             <!-- Filter & Summary Stats Layer -->
-            <div class="grid grid-cols-1 xl:grid-cols-5 gap-6 items-start">
+            <div class="grid grid-cols-1 xl:grid-cols-5 gap-4 md:gap-6 items-stretch">
                 <!-- Filter Card -->
-                <div class="xl:col-span-1 bg-white p-6 rounded-2xl shadow-md border border-slate-100 h-full flex flex-col justify-center">
-                    <label class="block text-sm font-bold text-slate-700 mb-3">📍 동네 선택</label>
-                    <select id="dong-filter" class="filter-select w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 font-bold focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all cursor-pointer">
+                <div class="xl:col-span-1 bg-white p-5 md:p-6 rounded-2xl shadow-md border border-slate-100 flex flex-col justify-center">
+                    <label class="block text-sm font-bold text-slate-700 mb-2 md:mb-3">📍 동네 선택</label>
+                    <select id="dong-filter" class="filter-select w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 font-bold focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all cursor-pointer text-sm md:text-base">
                         <option value="all">전체 동네 보기</option>
                     </select>
                 </div>
 
                 <!-- Stats Cards -->
-                <div class="xl:col-span-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                    <div class="stat-card bg-white p-5 rounded-2xl shadow-md border-b-4 border-red-500">
-                        <p class="text-xs font-bold text-red-500 mb-1">🏠 전체 거래 건수</p>
-                        <h3 id="stat-count" class="text-2xl font-black text-slate-800">-</h3>
+                <div class="xl:col-span-4 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+                    <div class="stat-card bg-white p-4 md:p-5 rounded-2xl shadow-md border-b-4 border-red-500">
+                        <p class="text-[10px] md:text-xs font-bold text-red-500 mb-1">🏠 전체 거래 건수</p>
+                        <h3 id="stat-count" class="text-xl md:text-2xl font-black text-slate-800">-</h3>
                     </div>
-                    <div class="stat-card bg-white p-5 rounded-2xl shadow-md border-b-4 border-orange-400">
-                        <p class="text-xs font-bold text-orange-500 mb-1">💰 평균 거래가격</p>
-                        <h3 id="stat-avg" class="text-2xl font-black text-slate-800">-</h3>
+                    <div class="stat-card bg-white p-4 md:p-5 rounded-2xl shadow-md border-b-4 border-orange-400">
+                        <div class="flex justify-between items-start">
+                            <p class="text-[10px] md:text-xs font-bold text-orange-500 mb-1">💰 평균 거래가격</p>
+                            <span id="stat-avg-change" class="text-[9px] md:text-[10px] font-bold px-1.5 py-0.5 rounded-full hidden"></span>
+                        </div>
+                        <h3 id="stat-avg" class="text-xl md:text-2xl font-black text-slate-800">-</h3>
                     </div>
-                    <div class="stat-card bg-white p-5 rounded-2xl shadow-md border-b-4 border-emerald-400">
-                        <p class="text-xs font-bold text-emerald-600 mb-1">📈 최고 거래가격</p>
-                        <h3 id="stat-max" class="text-2xl font-black text-slate-800">-</h3>
+                    <div class="stat-card bg-white p-4 md:p-5 rounded-2xl shadow-md border-b-4 border-emerald-400">
+                        <p class="text-[10px] md:text-xs font-bold text-emerald-600 mb-1">📈 최고 거래가격</p>
+                        <h3 id="stat-max" class="text-xl md:text-2xl font-black text-slate-800">-</h3>
                     </div>
-                    <div class="stat-card bg-white p-5 rounded-2xl shadow-md border-b-4 border-indigo-500">
-                        <p class="text-xs font-bold text-indigo-600 mb-1">📉 최저 거래가격</p>
-                        <h3 id="stat-min" class="text-2xl font-black text-slate-800">-</h3>
+                    <div class="stat-card bg-white p-4 md:p-5 rounded-2xl shadow-md border-b-4 border-indigo-500">
+                        <p class="text-[10px] md:text-xs font-bold text-indigo-600 mb-1">📉 최저 거래가격</p>
+                        <h3 id="stat-min" class="text-xl md:text-2xl font-black text-slate-800">-</h3>
                     </div>
                 </div>
             </div>
@@ -114,10 +125,10 @@
             <div class="flex flex-col lg:flex-row gap-6">
                 
                 <!-- Left Column: Charts & Ranking -->
-                <div class="lg:w-5/12 space-y-6">
+                <div class="w-full lg:w-5/12 space-y-6">
                     <!-- Chart Card -->
-                    <div class="bg-white p-6 rounded-2xl shadow-lg border border-slate-100">
-                        <h4 class="text-xl font-bold text-slate-800 mb-4 flex items-center">
+                    <div class="bg-white p-5 md:p-6 rounded-2xl shadow-lg border border-slate-100">
+                        <h4 class="text-lg md:text-xl font-bold text-slate-800 mb-4 flex items-center">
                             <span class="mr-2">📈</span> 월별 평균가 추이
                         </h4>
                         <div class="chart-container">
@@ -126,32 +137,32 @@
                     </div>
 
                     <!-- Ranking Card -->
-                    <div class="bg-white p-6 rounded-2xl shadow-lg border border-slate-100">
-                        <h4 class="text-xl font-bold text-slate-800 mb-4 flex items-center">
+                    <div class="bg-white p-5 md:p-6 rounded-2xl shadow-lg border border-slate-100">
+                        <h4 class="text-lg md:text-xl font-bold text-slate-800 mb-4 flex items-center">
                             <span class="mr-2">👑</span> 실거래가 TOP 5
                         </h4>
                         <div id="ranking-container" class="space-y-3">
-                            <!-- Ranking list will be added here -->
+                            <!-- Ranking list -->
                         </div>
                     </div>
                 </div>
 
                 <!-- Right Column: Detailed Table -->
-                <div class="lg:w-7/12">
-                    <div class="bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden h-full flex flex-col">
-                        <div class="p-6 border-b border-slate-100">
-                            <h4 class="text-xl font-bold text-slate-800">📋 상세 거래 내역</h4>
+                <div class="w-full lg:w-7/12">
+                    <div class="bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden flex flex-col h-full min-h-[400px]">
+                        <div class="p-5 md:p-6 border-b border-slate-100">
+                            <h4 class="text-lg md:text-xl font-bold text-slate-800">📋 상세 거래 내역 <span class="text-xs text-slate-400 ml-2 font-normal">(행 클릭 시 상세 정보 팝업)</span></h4>
                         </div>
                         <div class="overflow-x-auto flex-grow table-scroll">
-                            <table class="w-full text-left border-collapse">
+                            <table class="w-full text-left border-collapse min-w-[600px]">
                                 <thead class="sticky top-0 z-10">
                                     <tr class="rainbow-bg">
-                                        <th class="px-6 py-4 text-xs font-black text-slate-700 uppercase tracking-wider">거래일자</th>
-                                        <th class="px-6 py-4 text-xs font-black text-slate-700 uppercase tracking-wider">아파트명</th>
-                                        <th class="px-6 py-4 text-xs font-black text-slate-700 uppercase tracking-wider">법정동</th>
-                                        <th class="px-6 py-4 text-xs font-black text-slate-700 uppercase tracking-wider text-right">전용(㎡)</th>
-                                        <th class="px-6 py-4 text-xs font-black text-slate-700 uppercase tracking-wider text-center">층</th>
-                                        <th class="px-6 py-4 text-xs font-black text-slate-700 uppercase tracking-wider text-right">거래금액(만)</th>
+                                        <th class="px-4 md:px-6 py-4 text-[10px] md:text-xs font-black text-slate-700 uppercase tracking-wider">거래일자</th>
+                                        <th class="px-4 md:px-6 py-4 text-[10px] md:text-xs font-black text-slate-700 uppercase tracking-wider">아파트명</th>
+                                        <th class="px-4 md:px-6 py-4 text-[10px] md:text-xs font-black text-slate-700 uppercase tracking-wider">법정동</th>
+                                        <th class="px-4 md:px-6 py-4 text-[10px] md:text-xs font-black text-slate-700 uppercase tracking-wider text-right">전용(㎡)</th>
+                                        <th class="px-4 md:px-6 py-4 text-[10px] md:text-xs font-black text-slate-700 uppercase tracking-wider text-center">층</th>
+                                        <th class="px-4 md:px-6 py-4 text-[10px] md:text-xs font-black text-slate-700 uppercase tracking-wider text-right">거래금액(만)</th>
                                     </tr>
                                 </thead>
                                 <tbody id="table-body" class="divide-y divide-slate-100 bg-white">
@@ -169,10 +180,65 @@
         <div id="error-box" class="hidden p-8 bg-white text-center rounded-2xl shadow-lg border border-red-100 mt-4">
             <p class="text-red-500 text-5xl mb-4">⚠️</p>
             <p class="font-bold text-xl text-slate-800 mb-2">데이터를 불러오지 못했습니다</p>
-            <p class="text-slate-500 mb-6">네트워크 연결이나 구글 시트 공개 설정을 확인해주세요.</p>
-            <button onclick="initDashboard()" class="px-6 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition-colors">
+            <p class="text-slate-500 mb-6 font-medium">네트워크 연결이나 구글 시트 공개 설정을 확인해주세요.</p>
+            <button onclick="initDashboard()" class="px-6 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-md transition-all active:scale-95">
                 다시 시도하기
             </button>
+        </div>
+    </div>
+
+    <!-- Transaction Detail Modal -->
+    <div id="modal-overlay" class="fixed inset-0 bg-black/60 z-[100] hidden items-center justify-center p-4">
+        <div id="modal-content" class="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden scale-95 opacity-0">
+            <!-- Modal Header -->
+            <div class="rainbow-bg p-6 border-b border-slate-100 relative">
+                <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center text-2xl">🏙️</div>
+                    <div>
+                        <h2 id="modal-apt-name" class="text-xl font-black text-slate-800 truncate leading-tight">아파트명</h2>
+                        <p id="modal-dong" class="text-sm font-bold text-slate-500">법정동</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Modal Body -->
+            <div class="p-6 space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-slate-50 p-4 rounded-2xl">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">거래금액</p>
+                        <p id="modal-price" class="text-lg font-black text-indigo-600">0 만원</p>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-2xl">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">거래일자</p>
+                        <p id="modal-date" class="text-lg font-black text-slate-700">0000.00.00</p>
+                    </div>
+                </div>
+                
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center py-2 border-b border-slate-50">
+                        <span class="text-sm font-bold text-slate-500">전용면적</span>
+                        <span id="modal-size" class="text-sm font-black text-slate-800">00㎡</span>
+                    </div>
+                    <div class="flex justify-between items-center py-2 border-b border-slate-50">
+                        <span class="text-sm font-bold text-slate-500">층수</span>
+                        <span id="modal-floor" class="text-sm font-black text-slate-800">0층</span>
+                    </div>
+                    <div class="flex justify-between items-center py-2">
+                        <span class="text-sm font-bold text-slate-500">건축년도</span>
+                        <span id="modal-build-year" class="text-sm font-black text-slate-800">0000년</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="p-6 bg-slate-50">
+                <button onclick="closeModal()" class="w-full py-4 bg-white border border-slate-200 text-slate-700 font-black rounded-2xl shadow-sm hover:bg-slate-50 active:scale-[0.98] transition-all">
+                    닫기
+                </button>
+            </div>
         </div>
     </div>
 
@@ -181,6 +247,9 @@
         let priceChartInstance = null;
         let originalData = [];
 
+        /**
+         * 데이터 로드 초기화
+         */
         function initDashboard() {
             const loader = document.getElementById('loader');
             const dashboard = document.getElementById('dashboard');
@@ -210,6 +279,9 @@
             });
         }
 
+        /**
+         * 필터 드롭다운 설정
+         */
         function setupFilter(data) {
             const select = document.getElementById('dong-filter');
             const dongs = [...new Set(data.map(item => item['법정동']))].filter(Boolean).sort();
@@ -247,6 +319,50 @@
             return parseInt(priceStr.toString().replace(/[^0-9]/g, ''));
         }
 
+        /**
+         * 모달 열기
+         */
+        function openModal(item) {
+            const overlay = document.getElementById('modal-overlay');
+            const content = document.getElementById('modal-content');
+            
+            document.getElementById('modal-apt-name').innerText = item['아파트명'];
+            document.getElementById('modal-dong').innerText = `📍 ${item['법정동']}`;
+            document.getElementById('modal-price').innerText = `${formatNumber(cleanPrice(item['거래금액']))} 만원`;
+            document.getElementById('modal-date').innerText = item['거래일자'];
+            document.getElementById('modal-size').innerText = `${item['전용면적']} ㎡`;
+            document.getElementById('modal-floor').innerText = `${item['층']} 층`;
+            document.getElementById('modal-build-year').innerText = `${item['건축년도']} 년`;
+
+            overlay.classList.remove('hidden');
+            overlay.classList.add('flex');
+            
+            // Animation Delay
+            setTimeout(() => {
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        /**
+         * 모달 닫기
+         */
+        function closeModal() {
+            const overlay = document.getElementById('modal-overlay');
+            const content = document.getElementById('modal-content');
+            
+            content.classList.add('scale-95', 'opacity-0');
+            content.classList.remove('scale-100', 'opacity-100');
+            
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+                overlay.classList.remove('flex');
+            }, 300);
+        }
+
+        /**
+         * 대시보드 렌더링
+         */
         function renderDashboard(data) {
             document.getElementById('loader').classList.add('hidden');
             document.getElementById('dashboard').classList.remove('hidden');
@@ -259,6 +375,7 @@
                 document.getElementById('stat-avg').innerText = "0 만원";
                 document.getElementById('stat-max').innerText = "0 만원";
                 document.getElementById('stat-min').innerText = "0 만원";
+                document.getElementById('stat-avg-change').classList.add('hidden');
                 if (priceChartInstance) priceChartInstance.destroy();
                 document.getElementById('ranking-container').innerHTML = '<p class="text-center text-slate-400 py-4">데이터 없음</p>';
                 document.getElementById('table-body').innerHTML = '<tr><td colspan="6" class="px-6 py-10 text-center text-slate-400 font-medium">거래 데이터가 없습니다.</td></tr>';
@@ -274,7 +391,7 @@
             document.getElementById('stat-max').innerText = `${formatNumber(maxPrice)} 만원`;
             document.getElementById('stat-min').innerText = `${formatNumber(minPrice)} 만원`;
 
-            // 1. Ranking Logic
+            // 1. Ranking
             const sortedForRanking = [...data].sort((a, b) => cleanPrice(b['거래금액']) - cleanPrice(a['거래금액']));
             const top5 = sortedForRanking.slice(0, 5);
             const rankingContainer = document.getElementById('ranking-container');
@@ -291,21 +408,22 @@
                 else { medalClass = 'bg-slate-50 text-slate-400'; medalIcon = `<span class="text-xs font-bold">${rank}</span>`; }
 
                 const rankItem = document.createElement('div');
-                rankItem.className = "flex items-center p-3 rounded-xl border border-slate-50 hover:shadow-sm transition-shadow";
+                rankItem.className = "flex items-center p-3 rounded-xl border border-slate-50 hover:shadow-sm transition-shadow bg-slate-50/30 cursor-pointer";
+                rankItem.onclick = () => openModal(item);
                 rankItem.innerHTML = `
-                    <div class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full ${medalClass} mr-3">${medalIcon}</div>
+                    <div class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full ${medalClass} mr-3 text-sm md:text-base">${medalIcon}</div>
                     <div class="flex-grow overflow-hidden">
-                        <p class="text-sm font-bold text-slate-800 truncate">${item['아파트명']}</p>
-                        <p class="text-xs text-slate-500">${item['전용면적']}㎡ · ${item['층']}층</p>
+                        <p class="text-xs md:text-sm font-bold text-slate-800 truncate">${item['아파트명']}</p>
+                        <p class="text-[10px] md:text-xs text-slate-500">${item['전용면적']}㎡ · ${item['층']}층</p>
                     </div>
                     <div class="flex-shrink-0 text-right">
-                        <p class="text-sm font-black text-indigo-600">${formatNumber(price)}</p>
-                        <p class="text-[10px] text-slate-400">만원</p>
+                        <p class="text-xs md:text-sm font-black text-indigo-600">${formatNumber(price)}</p>
+                        <p class="text-[9px] md:text-[10px] text-slate-400 font-bold uppercase">만원</p>
                     </div>`;
                 rankingContainer.appendChild(rankItem);
             });
 
-            // 2. Chart Logic
+            // 2. Chart & Change Rate
             const monthlyData = {};
             data.forEach(item => {
                 const dateStr = item['거래일자']?.toString() || "";
@@ -319,9 +437,28 @@
             const labels = Object.keys(monthlyData).sort();
             const avgPrices = labels.map(l => Math.round(monthlyData[l].sum / monthlyData[l].count));
 
+            const changeBadge = document.getElementById('stat-avg-change');
+            if (labels.length >= 2) {
+                const currentMonthAvg = avgPrices[avgPrices.length - 1];
+                const prevMonthAvg = avgPrices[avgPrices.length - 2];
+                const changePercent = ((currentMonthAvg - prevMonthAvg) / prevMonthAvg * 100).toFixed(1);
+                changeBadge.classList.remove('hidden');
+                if (changePercent > 0) {
+                    changeBadge.innerText = `▲ ${changePercent}%`;
+                    changeBadge.className = "text-[9px] md:text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-red-50 text-red-500";
+                } else if (changePercent < 0) {
+                    changeBadge.innerText = `▼ ${Math.abs(changePercent)}%`;
+                    changeBadge.className = "text-[9px] md:text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-500";
+                } else {
+                    changeBadge.innerText = `- 0%`;
+                    changeBadge.className = "text-[9px] md:text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-slate-50 text-slate-400";
+                }
+            } else {
+                changeBadge.classList.add('hidden');
+            }
+
             const ctx = document.getElementById('priceChart').getContext('2d');
             if (priceChartInstance) priceChartInstance.destroy();
-
             const gradient = ctx.createLinearGradient(0, 0, ctx.canvas.width, 0);
             gradient.addColorStop(0, '#ef4444');
             gradient.addColorStop(0.2, '#f59e0b');
@@ -338,12 +475,12 @@
                         label: '평균가',
                         data: avgPrices,
                         borderColor: gradient,
-                        borderWidth: 4,
+                        borderWidth: 3,
                         backgroundColor: 'rgba(255, 255, 255, 0.1)',
                         fill: false,
                         tension: 0.4,
-                        pointRadius: 5,
-                        pointHoverRadius: 7,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
                         pointBackgroundColor: '#fff',
                         pointBorderColor: gradient,
                         pointBorderWidth: 2
@@ -354,34 +491,47 @@
                     maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     scales: {
-                        y: { 
-                            beginAtZero: false,
-                            grid: { color: '#f1f5f9' },
-                            ticks: { font: { size: 10, weight: 'bold' }, callback: value => formatNumber(value) }
-                        },
-                        x: { grid: { display: false }, ticks: { font: { size: 10, weight: 'bold' } } }
+                        y: { beginAtZero: false, grid: { color: '#f1f5f9' }, ticks: { font: { size: 9, weight: 'bold' }, callback: value => formatNumber(value) } },
+                        x: { grid: { display: false }, ticks: { font: { size: 9, weight: 'bold' } } }
                     }
                 }
             });
 
-            // 3. Table Logic
+            // 3. Table
             const tbody = document.getElementById('table-body');
             tbody.innerHTML = ''; 
             data.slice().reverse().forEach((item) => {
                 const tr = document.createElement('tr');
                 const price = cleanPrice(item['거래금액']);
                 const priceColorClass = price >= 50000 ? 'text-red-600 font-black' : 'text-indigo-600 font-bold';
-                tr.className = "transition-colors border-l-4 border-transparent hover:border-indigo-400 even:bg-slate-50/50 hover:bg-indigo-50 cursor-default";
+                
+                // Add click event for modal
+                tr.className = "transition-colors border-l-4 border-transparent hover:border-indigo-400 even:bg-slate-50/50 hover:bg-indigo-50 cursor-pointer";
+                tr.onclick = () => openModal(item);
+                
                 tr.innerHTML = `
-                    <td class="px-6 py-4 text-xs font-medium text-slate-500">${item['거래일자']}</td>
-                    <td class="px-6 py-4 text-sm font-bold text-slate-900">${item['아파트명']}</td>
-                    <td class="px-6 py-4 text-xs text-slate-600">${item['법정동']}</td>
-                    <td class="px-6 py-4 text-xs text-slate-600 text-right font-mono">${item['전용면적']}</td>
-                    <td class="px-6 py-4 text-xs text-slate-600 text-center">${item['층']}</td>
-                    <td class="px-6 py-4 text-sm text-right ${priceColorClass}">${formatNumber(price)}</td>`;
+                    <td class="px-4 md:px-6 py-4 text-[10px] md:text-xs font-medium text-slate-500">${item['거래일자']}</td>
+                    <td class="px-4 md:px-6 py-4 text-xs md:text-sm font-bold text-slate-900">${item['아파트명']}</td>
+                    <td class="px-4 md:px-6 py-4 text-[10px] md:text-xs text-slate-600">${item['법정동']}</td>
+                    <td class="px-4 md:px-6 py-4 text-[10px] md:text-xs text-slate-600 text-right font-mono">${item['전용면적']}</td>
+                    <td class="px-4 md:px-6 py-4 text-[10px] md:text-xs text-slate-600 text-center">${item['층']}</td>
+                    <td class="px-4 md:px-6 py-4 text-xs md:text-sm text-right ${priceColorClass}">${formatNumber(price)}</td>`;
                 tbody.appendChild(tr);
             });
         }
+
+        // Close modal on click outside
+        window.onclick = function(event) {
+            const overlay = document.getElementById('modal-overlay');
+            if (event.target == overlay) {
+                closeModal();
+            }
+        }
+
+        // Close modal on ESC key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === "Escape") closeModal();
+        });
 
         window.onload = initDashboard;
     </script>
