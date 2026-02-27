@@ -116,33 +116,55 @@
         </div>
 
         <!-- Error Message -->
-        <div id="error-box" class="hidden p-6 bg-red-100 text-red-700 rounded-2xl border-2 border-red-200 mt-4 text-center">
-            <p class="font-bold text-lg">⚠️ 데이터를 불러오지 못했습니다.</p>
-            <p class="text-sm">CSV URL 설정이나 구글 시트 공개 여부를 확인해주세요.</p>
+        <div id="error-box" class="hidden p-8 bg-white text-center rounded-2xl shadow-lg border border-red-100 mt-4">
+            <p class="text-red-500 text-5xl mb-4">⚠️</p>
+            <p class="font-bold text-xl text-slate-800 mb-2">데이터를 불러오지 못했습니다</p>
+            <p class="text-slate-500 mb-6">네트워크 연결이나 구글 시트 공개 설정을 확인해주세요.</p>
+            <button onclick="initDashboard()" class="px-6 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition-colors">
+                다시 시도하기
+            </button>
         </div>
     </div>
 
     <script>
         const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRvvr-BP7aT17jjDBPMs6ZYBn1qU0-9IAM0rT194XcJbkh81ub9aM4-Xr9PxX5f8iO_yy0mgHJKN770/pub?gid=1121527580&single=true&output=csv';
+        let priceChartInstance = null;
 
-        async function initDashboard() {
-            try {
-                const response = await fetch(CSV_URL);
-                if (!response.ok) throw new Error('Network response was not ok');
-                const csvData = await response.text();
-                
-                Papa.parse(csvData, {
-                    header: true,
-                    skipEmptyLines: true,
-                    complete: function(results) {
+        /**
+         * 데이터 로드 초기화 함수
+         * fetch 대신 PapaParse의 download 옵션을 사용하여 CORS 및 데이터 로드 안정성을 높임
+         */
+        function initDashboard() {
+            const loader = document.getElementById('loader');
+            const dashboard = document.getElementById('dashboard');
+            const errorBox = document.getElementById('error-box');
+
+            // 상태 초기화
+            loader.classList.remove('hidden');
+            dashboard.classList.add('hidden');
+            errorBox.classList.add('hidden');
+
+            Papa.parse(CSV_URL, {
+                download: true,
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    if (results.data && results.data.length > 0) {
                         renderDashboard(results.data);
+                    } else {
+                        handleLoadError('데이터가 비어 있거나 올바르지 않은 형식입니다.');
                     }
-                });
-            } catch (error) {
-                console.error('Error fetching data:', error);
-                document.getElementById('loader').classList.add('hidden');
-                document.getElementById('error-box').classList.remove('hidden');
-            }
+                },
+                error: function(err) {
+                    console.error('Data Loading Error:', err);
+                    handleLoadError();
+                }
+            });
+        }
+
+        function handleLoadError(msg) {
+            document.getElementById('loader').classList.add('hidden');
+            document.getElementById('error-box').classList.remove('hidden');
         }
 
         function formatNumber(num) {
@@ -157,8 +179,6 @@
         function renderDashboard(data) {
             document.getElementById('loader').classList.add('hidden');
             document.getElementById('dashboard').classList.remove('hidden');
-
-            if (!data || data.length === 0) return;
 
             // 1. 통계 계산
             const prices = data.map(item => cleanPrice(item['거래금액'])).filter(p => p > 0);
@@ -187,17 +207,21 @@
             const labels = Object.keys(monthlyData).sort();
             const avgPrices = labels.map(l => Math.round(monthlyData[l].sum / monthlyData[l].count));
 
-            // 차트 생성 (그라데이션 적용)
+            // 차트 생성 및 갱신
             const ctx = document.getElementById('priceChart').getContext('2d');
-            const gradient = ctx.createLinearGradient(0, 0, ctx.canvas.width, 0);
-            gradient.addColorStop(0, '#ef4444');   // Red
-            gradient.addColorStop(0.2, '#f59e0b'); // Orange
-            gradient.addColorStop(0.4, '#10b981'); // Green
-            gradient.addColorStop(0.6, '#3b82f6'); // Blue
-            gradient.addColorStop(0.8, '#6366f1'); // Indigo
-            gradient.addColorStop(1, '#8b5cf6');   // Violet
+            if (priceChartInstance) {
+                priceChartInstance.destroy();
+            }
 
-            new Chart(ctx, {
+            const gradient = ctx.createLinearGradient(0, 0, ctx.canvas.width, 0);
+            gradient.addColorStop(0, '#ef4444');
+            gradient.addColorStop(0.2, '#f59e0b');
+            gradient.addColorStop(0.4, '#10b981');
+            gradient.addColorStop(0.6, '#3b82f6');
+            gradient.addColorStop(0.8, '#6366f1');
+            gradient.addColorStop(1, '#8b5cf6');
+
+            priceChartInstance = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: labels.map(l => `${l.substring(0,4)}년 ${l.substring(4,6)}월`),
@@ -250,18 +274,15 @@
 
             // 3. 테이블 렌더링
             const tbody = document.getElementById('table-body');
-            tbody.innerHTML = ''; // 기존 내용 삭제
+            tbody.innerHTML = ''; 
 
             data.slice().reverse().forEach((item, index) => {
                 const tr = document.createElement('tr');
                 const price = cleanPrice(item['거래금액']);
                 
-                // 조건부 서식: 5억(50,000만원) 이상이면 빨간색, 아니면 기본 인디고색
+                // 5억(50,000만원) 이상이면 빨간색 강조
                 const priceColorClass = price >= 50000 ? 'text-red-600 font-black' : 'text-indigo-600 font-bold';
                 
-                // 행 기본 스타일 (줄무늬 효과 포함)
-                // even:bg-slate-50/50: 짝수 행에 연한 회색 배경
-                // hover:bg-indigo-50: 마우스 오버 시 연한 파란색 배경
                 tr.className = "transition-colors border-l-4 border-transparent hover:border-indigo-400 even:bg-slate-50/50 hover:bg-indigo-50 cursor-default";
                 
                 tr.innerHTML = `
@@ -276,6 +297,7 @@
             });
         }
 
+        // 페이지 로드 시 실행
         window.onload = initDashboard;
     </script>
 </body>
