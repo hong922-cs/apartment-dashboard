@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>우리 동네 아파트 실거래가 대시보드</title>
+    <title>무지개 아파트 실거래가 대시보드</title>
     <!-- Tailwind CSS for modern UI -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js for data visualization -->
@@ -12,17 +12,34 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700&display=swap');
-        body { font-family: 'Pretendard', sans-serif; background-color: #f8fafc; }
+        body { font-family: 'Pretendard', sans-serif; background-color: #fdfdfd; }
+        
+        /* Rainbow Text Gradient */
+        .rainbow-text {
+            background: linear-gradient(to right, #ef4444, #f59e0b, #10b981, #3b82f6, #6366f1, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Rainbow Border Gradient for Table Header */
+        .rainbow-bg {
+            background: linear-gradient(to right, #fee2e2, #fef3c7, #d1fae5, #dbeafe, #e0e7ff, #f5f3ff);
+        }
+
         .chart-container { position: relative; height: 350px; width: 100%; }
+        
         .loading-spinner {
             border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
+            border-top: 4px solid #ef4444;
             border-radius: 50%;
             width: 40px;
             height: 40px;
             animation: spin 1s linear infinite;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .stat-card { transition: transform 0.2s; }
+        .stat-card:hover { transform: translateY(-5px); }
     </style>
 </head>
 <body class="p-4 md:p-8">
@@ -30,66 +47,68 @@
     <div class="max-w-6xl mx-auto">
         <!-- Header -->
         <header class="mb-8 text-center md:text-left">
-            <h1 class="text-3xl font-bold text-slate-800">우리 동네 아파트 실거래가 대시보드</h1>
-            <p class="text-slate-500 mt-2">구글 시트 데이터를 기반으로 실시간 거래 현황을 분석합니다.</p>
+            <h1 class="text-4xl font-black rainbow-text pb-2">우리 동네 아파트 실거래가 대시보드</h1>
+            <p class="text-slate-500 mt-2 font-medium">🌈 화려한 색감으로 보는 실시간 거래 현황 분석</p>
         </header>
 
         <!-- Loading State -->
         <div id="loader" class="flex flex-col items-center justify-center py-20">
             <div class="loading-spinner mb-4"></div>
-            <p class="text-slate-600">데이터를 불러오는 중입니다...</p>
+            <p class="text-slate-600 font-bold">무지개 데이터를 불러오는 중...</p>
         </div>
 
         <!-- Dashboard Content (Initially Hidden) -->
         <div id="dashboard" class="hidden space-y-6">
             
-            <!-- Summary Stats -->
+            <!-- Summary Stats with Rainbow Colors -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                    <p class="text-sm font-medium text-slate-500 mb-1">전체 거래 건수</p>
-                    <h3 id="stat-count" class="text-2xl font-bold text-blue-600">-</h3>
+                <div class="stat-card bg-white p-6 rounded-2xl shadow-md border-b-4 border-red-500">
+                    <p class="text-sm font-bold text-red-500 mb-1">전체 거래 건수</p>
+                    <h3 id="stat-count" class="text-3xl font-black text-slate-800">-</h3>
                 </div>
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                    <p class="text-sm font-medium text-slate-500 mb-1">평균 거래가격</p>
-                    <h3 id="stat-avg" class="text-2xl font-bold text-slate-800">-</h3>
+                <div class="stat-card bg-white p-6 rounded-2xl shadow-md border-b-4 border-orange-400">
+                    <p class="text-sm font-bold text-orange-500 mb-1">평균 거래가격</p>
+                    <h3 id="stat-avg" class="text-3xl font-black text-slate-800">-</h3>
                 </div>
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                    <p class="text-sm font-medium text-slate-500 mb-1">최고 거래가격</p>
-                    <h3 id="stat-max" class="text-2xl font-bold text-red-500">-</h3>
+                <div class="stat-card bg-white p-6 rounded-2xl shadow-md border-b-4 border-emerald-400">
+                    <p class="text-sm font-bold text-emerald-600 mb-1">최고 거래가격</p>
+                    <h3 id="stat-max" class="text-3xl font-black text-slate-800">-</h3>
                 </div>
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                    <p class="text-sm font-medium text-slate-500 mb-1">최저 거래가격</p>
-                    <h3 id="stat-min" class="text-2xl font-bold text-green-600">-</h3>
+                <div class="stat-card bg-white p-6 rounded-2xl shadow-md border-b-4 border-indigo-500">
+                    <p class="text-sm font-bold text-indigo-600 mb-1">최저 거래가격</p>
+                    <h3 id="stat-min" class="text-3xl font-black text-slate-800">-</h3>
                 </div>
             </div>
 
             <!-- Chart Section -->
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                <h4 class="text-lg font-semibold text-slate-800 mb-4">월별 평균 거래가격 추이</h4>
+            <div class="bg-white p-6 rounded-2xl shadow-lg border border-slate-100">
+                <h4 class="text-xl font-bold text-slate-800 mb-4 flex items-center">
+                    <span class="mr-2">📈</span> 월별 평균 거래가격 추이
+                </h4>
                 <div class="chart-container">
                     <canvas id="priceChart"></canvas>
                 </div>
             </div>
 
             <!-- Table Section -->
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-                <div class="p-6 border-b border-slate-100">
-                    <h4 class="text-lg font-semibold text-slate-800">최근 거래 목록</h4>
+            <div class="bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden">
+                <div class="p-6 border-b border-slate-100 flex justify-between items-center">
+                    <h4 class="text-xl font-bold text-slate-800">📋 최근 거래 목록</h4>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="bg-slate-50">
-                                <th class="px-6 py-3 text-xs font-semibold text-slate-600 uppercase">거래일자</th>
-                                <th class="px-6 py-3 text-xs font-semibold text-slate-600 uppercase">아파트명</th>
-                                <th class="px-6 py-3 text-xs font-semibold text-slate-600 uppercase">법정동</th>
-                                <th class="px-6 py-3 text-xs font-semibold text-slate-600 uppercase text-right">전용면적(㎡)</th>
-                                <th class="px-6 py-3 text-xs font-semibold text-slate-600 uppercase text-center">층</th>
-                                <th class="px-6 py-3 text-xs font-semibold text-slate-600 uppercase text-right">거래금액(만원)</th>
+                            <tr class="rainbow-bg">
+                                <th class="px-6 py-4 text-xs font-black text-slate-700 uppercase tracking-wider">거래일자</th>
+                                <th class="px-6 py-4 text-xs font-black text-slate-700 uppercase tracking-wider">아파트명</th>
+                                <th class="px-6 py-4 text-xs font-black text-slate-700 uppercase tracking-wider">법정동</th>
+                                <th class="px-6 py-4 text-xs font-black text-slate-700 uppercase tracking-wider text-right">전용면적(㎡)</th>
+                                <th class="px-6 py-4 text-xs font-black text-slate-700 uppercase tracking-wider text-center">층</th>
+                                <th class="px-6 py-4 text-xs font-black text-slate-700 uppercase tracking-wider text-right">거래금액(만원)</th>
                             </tr>
                         </thead>
                         <tbody id="table-body" class="divide-y divide-slate-100">
-                            <!-- Rows will be added here -->
+                            <!-- Rows -->
                         </tbody>
                     </table>
                 </div>
@@ -97,8 +116,9 @@
         </div>
 
         <!-- Error Message -->
-        <div id="error-box" class="hidden p-4 bg-red-50 text-red-700 rounded-xl border border-red-100 mt-4">
-            데이터를 불러오는 데 실패했습니다. URL 또는 시트 설정을 확인해주세요.
+        <div id="error-box" class="hidden p-6 bg-red-100 text-red-700 rounded-2xl border-2 border-red-200 mt-4 text-center">
+            <p class="font-bold text-lg">⚠️ 데이터를 불러오지 못했습니다.</p>
+            <p class="text-sm">CSV URL 설정이나 구글 시트 공개 여부를 확인해주세요.</p>
         </div>
     </div>
 
@@ -108,6 +128,7 @@
         async function initDashboard() {
             try {
                 const response = await fetch(CSV_URL);
+                if (!response.ok) throw new Error('Network response was not ok');
                 const csvData = await response.text();
                 
                 Papa.parse(csvData, {
@@ -130,12 +151,10 @@
 
         function cleanPrice(priceStr) {
             if (!priceStr) return 0;
-            // 숫자 외 문자(쉼표 등) 제거 후 정수 변환
             return parseInt(priceStr.toString().replace(/[^0-9]/g, ''));
         }
 
         function renderDashboard(data) {
-            // UI Switch
             document.getElementById('loader').classList.add('hidden');
             document.getElementById('dashboard').classList.remove('hidden');
 
@@ -153,18 +172,14 @@
             document.getElementById('stat-max').innerText = `${formatNumber(maxPrice)} 만원`;
             document.getElementById('stat-min').innerText = `${formatNumber(minPrice)} 만원`;
 
-            // 2. 차트 데이터 가공 (월별 평균 가격)
+            // 2. 차트 데이터 가공
             const monthlyData = {};
             data.forEach(item => {
-                const dateStr = item['거래일자']; // "YYYYMMDD" 혹은 "YYYY-MM-DD" 가정
+                const dateStr = item['거래일자']?.toString() || "";
                 if (!dateStr) return;
-                
-                const month = dateStr.toString().substring(0, 6); // "YYYYMM" 추출
+                const month = dateStr.substring(0, 6);
                 const price = cleanPrice(item['거래금액']);
-                
-                if (!monthlyData[month]) {
-                    monthlyData[month] = { sum: 0, count: 0 };
-                }
+                if (!monthlyData[month]) monthlyData[month] = { sum: 0, count: 0 };
                 monthlyData[month].sum += price;
                 monthlyData[month].count += 1;
             });
@@ -172,33 +187,62 @@
             const labels = Object.keys(monthlyData).sort();
             const avgPrices = labels.map(l => Math.round(monthlyData[l].sum / monthlyData[l].count));
 
-            // 차트 생성
+            // 차트 생성 (그라데이션 적용)
             const ctx = document.getElementById('priceChart').getContext('2d');
+            const gradient = ctx.createLinearGradient(0, 0, ctx.canvas.width, 0);
+            gradient.addColorStop(0, '#ef4444');   // Red
+            gradient.addColorStop(0.2, '#f59e0b'); // Orange
+            gradient.addColorStop(0.4, '#10b981'); // Green
+            gradient.addColorStop(0.6, '#3b82f6'); // Blue
+            gradient.addColorStop(0.8, '#6366f1'); // Indigo
+            gradient.addColorStop(1, '#8b5cf6');   // Violet
+
             new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: labels.map(l => `${l.substring(0,4)}-${l.substring(4,6)}`),
+                    labels: labels.map(l => `${l.substring(0,4)}년 ${l.substring(4,6)}월`),
                     datasets: [{
                         label: '평균 거래가 (만원)',
                         data: avgPrices,
-                        borderColor: '#3b82f6',
-                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                        fill: true,
-                        tension: 0.3,
-                        pointRadius: 4,
-                        pointBackgroundColor: '#3b82f6'
+                        borderColor: gradient,
+                        borderWidth: 4,
+                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                        fill: false,
+                        tension: 0.4,
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: gradient,
+                        pointBorderWidth: 3
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { display: false }
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                            titleColor: '#1e293b',
+                            bodyColor: '#1e293b',
+                            borderColor: '#e2e8f0',
+                            borderWidth: 1,
+                            padding: 12,
+                            displayColors: false,
+                            callbacks: {
+                                label: context => `평균: ${formatNumber(context.parsed.y)} 만원`
+                            }
+                        }
                     },
                     scales: {
                         y: { 
                             beginAtZero: false,
-                            ticks: { callback: value => formatNumber(value) }
+                            grid: { color: '#f1f5f9' },
+                            ticks: { font: { weight: 'bold' }, callback: value => formatNumber(value) }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { font: { weight: 'bold' } }
                         }
                     }
                 }
@@ -208,14 +252,14 @@
             const tbody = document.getElementById('table-body');
             data.slice().reverse().forEach(item => {
                 const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50 transition-colors";
+                tr.className = "hover:bg-slate-50 transition-colors border-l-4 border-transparent hover:border-indigo-400";
                 tr.innerHTML = `
-                    <td class="px-6 py-4 text-sm text-slate-600">${item['거래일자']}</td>
-                    <td class="px-6 py-4 text-sm font-semibold text-slate-800">${item['아파트명']}</td>
+                    <td class="px-6 py-4 text-sm font-medium text-slate-500">${item['거래일자']}</td>
+                    <td class="px-6 py-4 text-sm font-bold text-slate-900">${item['아파트명']}</td>
                     <td class="px-6 py-4 text-sm text-slate-600">${item['법정동']}</td>
                     <td class="px-6 py-4 text-sm text-slate-600 text-right font-mono">${item['전용면적']}</td>
                     <td class="px-6 py-4 text-sm text-slate-600 text-center">${item['층']}</td>
-                    <td class="px-6 py-4 text-sm font-bold text-slate-800 text-right">${formatNumber(cleanPrice(item['거래금액']))}</td>
+                    <td class="px-6 py-4 text-sm font-black text-indigo-600 text-right">${formatNumber(cleanPrice(item['거래금액']))}</td>
                 `;
                 tbody.appendChild(tr);
             });
