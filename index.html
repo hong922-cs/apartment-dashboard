@@ -40,6 +40,15 @@
 
         .stat-card { transition: transform 0.2s; }
         .stat-card:hover { transform: translateY(-5px); }
+        
+        /* Custom Select Styling */
+        .filter-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1.25rem;
+        }
     </style>
 </head>
 <body class="p-4 md:p-8">
@@ -60,6 +69,16 @@
         <!-- Dashboard Content (Initially Hidden) -->
         <div id="dashboard" class="hidden space-y-6">
             
+            <!-- Filter Section -->
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4 bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                <div class="flex items-center gap-2">
+                    <span class="text-lg font-bold text-slate-700">📍 동네 선택</span>
+                </div>
+                <select id="dong-filter" class="filter-select w-full md:w-64 px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 font-bold focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all cursor-pointer">
+                    <option value="all">전체 동네 보기</option>
+                </select>
+            </div>
+
             <!-- Summary Stats with Rainbow Colors and Emojis -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div class="stat-card bg-white p-6 rounded-2xl shadow-md border-b-4 border-red-500">
@@ -108,7 +127,7 @@
                             </tr>
                         </thead>
                         <tbody id="table-body" class="divide-y divide-slate-100">
-                            <!-- Rows will be rendered by JS -->
+                            <!-- Rows -->
                         </tbody>
                     </table>
                 </div>
@@ -129,17 +148,16 @@
     <script>
         const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRvvr-BP7aT17jjDBPMs6ZYBn1qU0-9IAM0rT194XcJbkh81ub9aM4-Xr9PxX5f8iO_yy0mgHJKN770/pub?gid=1121527580&single=true&output=csv';
         let priceChartInstance = null;
+        let originalData = [];
 
         /**
-         * 데이터 로드 초기화 함수
-         * fetch 대신 PapaParse의 download 옵션을 사용하여 CORS 및 데이터 로드 안정성을 높임
+         * 데이터 로드 초기화
          */
         function initDashboard() {
             const loader = document.getElementById('loader');
             const dashboard = document.getElementById('dashboard');
             const errorBox = document.getElementById('error-box');
 
-            // 상태 초기화
             loader.classList.remove('hidden');
             dashboard.classList.add('hidden');
             errorBox.classList.add('hidden');
@@ -150,9 +168,11 @@
                 skipEmptyLines: true,
                 complete: function(results) {
                     if (results.data && results.data.length > 0) {
-                        renderDashboard(results.data);
+                        originalData = results.data;
+                        setupFilter(originalData);
+                        renderDashboard(originalData);
                     } else {
-                        handleLoadError('데이터가 비어 있거나 올바르지 않은 형식입니다.');
+                        handleLoadError();
                     }
                 },
                 error: function(err) {
@@ -162,7 +182,37 @@
             });
         }
 
-        function handleLoadError(msg) {
+        /**
+         * 필터 드롭다운 구성
+         */
+        function setupFilter(data) {
+            const select = document.getElementById('dong-filter');
+            // 법정동 목록 추출 및 정렬
+            const dongs = [...new Set(data.map(item => item['법정동']))].filter(Boolean).sort();
+            
+            // 초기화 (첫 번째 '전체' 옵션 제외)
+            select.innerHTML = '<option value="all">전체 동네 보기</option>';
+            
+            dongs.forEach(dong => {
+                const option = document.createElement('option');
+                option.value = dong;
+                option.textContent = dong;
+                select.appendChild(option);
+            });
+
+            // 필터 변경 이벤트 리스너
+            select.addEventListener('change', (e) => {
+                const selectedDong = e.target.value;
+                if (selectedDong === 'all') {
+                    renderDashboard(originalData);
+                } else {
+                    const filtered = originalData.filter(item => item['법정동'] === selectedDong);
+                    renderDashboard(filtered);
+                }
+            });
+        }
+
+        function handleLoadError() {
             document.getElementById('loader').classList.add('hidden');
             document.getElementById('error-box').classList.remove('hidden');
         }
@@ -176,13 +226,27 @@
             return parseInt(priceStr.toString().replace(/[^0-9]/g, ''));
         }
 
+        /**
+         * 대시보드 UI 렌더링 (통계, 차트, 테이블)
+         */
         function renderDashboard(data) {
             document.getElementById('loader').classList.add('hidden');
             document.getElementById('dashboard').classList.remove('hidden');
 
-            // 1. 통계 계산
             const prices = data.map(item => cleanPrice(item['거래금액'])).filter(p => p > 0);
             const count = data.length;
+
+            if (count === 0) {
+                // 데이터가 없는 경우 처리
+                document.getElementById('stat-count').innerText = "0 건";
+                document.getElementById('stat-avg').innerText = "0 만원";
+                document.getElementById('stat-max').innerText = "0 만원";
+                document.getElementById('stat-min').innerText = "0 만원";
+                if (priceChartInstance) priceChartInstance.destroy();
+                document.getElementById('table-body').innerHTML = '<tr><td colspan="6" class="px-6 py-10 text-center text-slate-400 font-medium">거래 데이터가 없습니다.</td></tr>';
+                return;
+            }
+
             const maxPrice = Math.max(...prices);
             const minPrice = Math.min(...prices);
             const avgPrice = Math.round(prices.reduce((a, b) => a + b, 0) / count);
@@ -192,7 +256,7 @@
             document.getElementById('stat-max').innerText = `${formatNumber(maxPrice)} 만원`;
             document.getElementById('stat-min').innerText = `${formatNumber(minPrice)} 만원`;
 
-            // 2. 차트 데이터 가공
+            // 차트 데이터 가공
             const monthlyData = {};
             data.forEach(item => {
                 const dateStr = item['거래일자']?.toString() || "";
@@ -207,11 +271,9 @@
             const labels = Object.keys(monthlyData).sort();
             const avgPrices = labels.map(l => Math.round(monthlyData[l].sum / monthlyData[l].count));
 
-            // 차트 생성 및 갱신
+            // 차트 그리기
             const ctx = document.getElementById('priceChart').getContext('2d');
-            if (priceChartInstance) {
-                priceChartInstance.destroy();
-            }
+            if (priceChartInstance) priceChartInstance.destroy();
 
             const gradient = ctx.createLinearGradient(0, 0, ctx.canvas.width, 0);
             gradient.addColorStop(0, '#ef4444');
@@ -272,15 +334,13 @@
                 }
             });
 
-            // 3. 테이블 렌더링
+            // 테이블 렌더링
             const tbody = document.getElementById('table-body');
             tbody.innerHTML = ''; 
 
-            data.slice().reverse().forEach((item, index) => {
+            data.slice().reverse().forEach((item) => {
                 const tr = document.createElement('tr');
                 const price = cleanPrice(item['거래금액']);
-                
-                // 5억(50,000만원) 이상이면 빨간색 강조
                 const priceColorClass = price >= 50000 ? 'text-red-600 font-black' : 'text-indigo-600 font-bold';
                 
                 tr.className = "transition-colors border-l-4 border-transparent hover:border-indigo-400 even:bg-slate-50/50 hover:bg-indigo-50 cursor-default";
@@ -297,7 +357,6 @@
             });
         }
 
-        // 페이지 로드 시 실행
         window.onload = initDashboard;
     </script>
 </body>
